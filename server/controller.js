@@ -1,62 +1,74 @@
 require("dotenv").config();
 
-const { CONNECTION_STRING } = process.env;
+const axios = require("axios");
 
-const { default: axios } = require("axios");
-
-let spells = [];
+let allWizardSpells = [];
 
 module.exports = {
   //GET WIZARD SPELLS
   getWizardSpells: (req, res) => {
-    console.log(req.body);
-    const queryString = req.body.query;
-    spells = [];
-    let timeout = 5000;
+    // console.log(req.body);
+    const { query, concFlag, rituFlag } = req.body;
 
     let path = `http://www.dnd5eapi.co/api/spells/`;
-    path += queryString;
+    path += query;
 
-    console.log(path);
+    // console.log(path);
 
-    axios.get(path).then((res) => {
+    axios.get(path).then(async (res1) => {
       let allSpellUrls = [];
+
       //cycle over each spell individually
-      for (let i = 0; i < res.data.results.length; i++) {
-        const spellUrl = "http://www.dnd5eapi.co" + res.data.results[i].url;
+      res1.data.results.forEach((e, i) => {
+        const spellUrl = "http://www.dnd5eapi.co" + e.url;
         allSpellUrls.push(axios.get(spellUrl));
-      }
-
-      console.log(allSpellUrls);
-      Promise.all(allSpellUrls).then((res) => {
-        console.log(res);
-        //check that its a wizard spell
-        index = res.data.classes.findIndex((obj) => {
-          return obj.index == "wizard";
-        });
-
-        if (index != -1) {
-          spells.push(res.data);
-        }
       });
-    });
 
-    setTimeout(() => {
-      console.log(spells.length);
-      res.status(200).send(spells);
-    }, timeout);
+      allWizardSpells = await fetchAllSpells(allSpellUrls, concFlag, rituFlag);
+      res.status(200).send(allWizardSpells);
+    });
   },
 };
 
-function getSpell(spellUrl) {
-  axios.get(spellUrl).then((res) => {
-    //check that its a wizard spell
-    index = res.data.classes.findIndex((obj) => {
-      return obj.index == "wizard";
+function fetchAllSpells(allSpellUrls, c, r) {
+  return Promise.all(allSpellUrls).then((response) => {
+    spells = [];
+    let conc;
+    let ritu;
+
+    // check if its a wizard spell
+    response.forEach((e) => {
+      const wizard = e.data.classes.findIndex((obj) => {
+        return obj.index == "wizard";
+      });
+
+      if (c) {
+        conc = e.data.concentration;
+      }
+
+      if (r) {
+        ritu = e.data.ritual;
+      }
+
+      if (wizard != -1 || !wizard) {
+        if (c && !r) {
+          if (conc) {
+            spells.push(e.data);
+          }
+        } else if (r && !c) {
+          if (ritu) {
+            spells.push(e.data);
+          }
+        } else if (r && c) {
+          if (ritu || conc) {
+            spells.push(e.data);
+          }
+        } else {
+          spells.push(e.data);
+        }
+      }
     });
 
-    if (index != -1) {
-      spells.push(res.data);
-    }
+    return spells;
   });
 }

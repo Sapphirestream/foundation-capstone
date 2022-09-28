@@ -94,7 +94,7 @@ button:hover {
 
 .school-btn{
     height: 30px;
-    width: 56px;
+    width: 65px;
     margin: 0px 4px;
 }
 
@@ -106,7 +106,7 @@ button:hover {
     margin-right: 0px;
 }
 
-.selected-all-btn,.selected-book-btn{
+.selected-all-btn,.selected-book-btn, .selected-rc, .selected-all{
     background-color: #7D2063;
     color: white;
 }
@@ -147,6 +147,8 @@ h3{
 .spell-hold {
     border: #919191 solid 2px;
     margin: 10px;
+    width: 40vw;
+    min-width: 570px;
 }
 
 .spell-min {
@@ -166,6 +168,7 @@ h4{
 p {
     font-weight: bold;
     font-size: 15px;
+    margin-top: 3px;
 }
 
 .grey {
@@ -177,6 +180,7 @@ p {
     font-weight: bold;
     font-size: 32px;
     width: 18px;
+    margin-right: 8px;
 }
 
 .w120 {
@@ -201,4 +205,12 @@ p {
 
 .hidden {
     display: none;
+}
+
+.green {
+    color: darkgreen;
+}
+
+.red {
+    color: darkred;
 }

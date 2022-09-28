@@ -7,6 +7,7 @@ app.use(express.json());
 app.use(cors());
 
 const { SERVER_PORT, CONNECTION_STRING } = process.env;
+
 const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize(CONNECTION_STRING, {
