@@ -341,6 +341,11 @@ function createSpell(spell, book, lvl) {
     spellBtn.textContent = "Add to Spellbook";
     spellBtn.addEventListener("click", addSpelltoBook);
   }
+
+  if (book) {
+    cost.classList.add("hidden");
+    spellTime.classList.add("hidden");
+  }
 }
 
 function createLvlLabels(selectText, book, b) {

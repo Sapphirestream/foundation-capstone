@@ -28,6 +28,21 @@ module.exports = {
       res.status(200).send(allWizardSpells);
     });
   },
+
+  //ADD Spells from ALL Spells to Spell book
+  addSpelltoBook: (req, res) => {
+    const { index } = req.params;
+
+    axios.get(`http://www.dnd5eapi.co/api/spells/${index}`).then((res) => {
+      // pull data to add to the table
+      const { level, concentration, ritual } = res.data;
+      const school = res.data.school.name;
+
+      console.log(index, level, concentration, ritual, school);
+    });
+
+    res.sendStatus(200);
+  },
 };
 
 function fetchAllSpells(allSpellUrls, c, r) {

@@ -19,17 +19,20 @@ const sequelize = new Sequelize(CONNECTION_STRING, {
   },
 });
 
-const { getWizardSpells } = require("./controller.js");
+const { getWizardSpells, addSpelltoBook } = require("./controller.js");
 const { home, styles, reset, js } = require("./loader.js");
+const { seed } = require("./seed.js");
 
 //CONNECT HTML
 app.get("/", home);
 app.get("/styles", styles);
 app.get("/reset", reset);
 app.get("/js", js);
+app.get("/seed", seed);
 
 //GET SPELLS including Queries
 app.post("/api/spells/", getWizardSpells);
+app.post("/api/spells/:index", addSpelltoBook);
 
 const port = process.env.PORT || SERVER_PORT;
 
