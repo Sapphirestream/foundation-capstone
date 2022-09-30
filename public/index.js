@@ -1,3 +1,5 @@
+//const { default: axios } = require("axios");
+
 //const axios = require("axios");
 const allBtns = document.querySelectorAll(".all");
 const allSpellsBox = document.querySelector("#all-spells-holder");
@@ -493,6 +495,17 @@ function removeSpell(e) {
   console.log("remove spell function");
 }
 
+//add spell to spell book from all spells
 function addSpelltoBook(e) {
-  console.log("add spell to spell book");
+  const spell = e.target.classList[1];
+  //console.log(`/api/spells/${spell}`);
+  axios
+    .post(`/api/spells/${spell}`)
+    .then(() => {
+      console.log(`${spell} added!`);
+      e.target.parentNode.parentNode.parentNode.remove();
+    })
+    .catch((err) => {
+      console.log(`${spell} error`, err);
+    });
 }

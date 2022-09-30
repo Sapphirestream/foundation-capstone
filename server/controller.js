@@ -1,8 +1,21 @@
 require("dotenv").config();
+const { CONNECTION_STRING } = process.env;
 
 const axios = require("axios");
 
+const Sequelize = require("sequelize");
+
+const sequelize = new Sequelize(CONNECTION_STRING, {
+  dialect: "postgres",
+  dialectOptions: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
+});
+
 let allWizardSpells = [];
+let spellIndex = [];
 
 module.exports = {
   //GET WIZARD SPELLS
@@ -24,7 +37,12 @@ module.exports = {
         allSpellUrls.push(axios.get(spellUrl));
       });
 
-      allWizardSpells = await fetchAllSpells(allSpellUrls, concFlag, rituFlag);
+      allWizardSpells = await fetchAllSpells(
+        allSpellUrls,
+        concFlag,
+        rituFlag,
+        spellIndex
+      );
       res.status(200).send(allWizardSpells);
     });
   },
@@ -38,14 +56,37 @@ module.exports = {
       const { level, concentration, ritual } = res.data;
       const school = res.data.school.name;
 
-      console.log(index, level, concentration, ritual, school);
+      //console.log(index, level, concentration, ritual, school);
+
+      sequelize.query(`SELECT index FROM spellbook`).then((res) => {
+        //console.log(res[0]);
+        spellIndex = res[0];
+        const check = checkIndex(spellIndex, index);
+        console.log(`${index}: ${check}`);
+
+        if (check == true) {
+          sequelize
+            .query(
+              `INSERT INTO spellbook(index, level, school, concentration, ritual, homebrew)
+      VALUES ('${index}', ${level}, '${school}', ${concentration}, ${ritual}, false);`
+            )
+            .then(() => {
+              console.log(`${index} added`);
+            })
+            .catch((err) => console.log(`error adding spell ${index}`, err));
+        }
+      });
     });
 
     res.sendStatus(200);
   },
+
+  getBookSpells: (req, res) => {
+    console.log("getBookSpells");
+  },
 };
 
-function fetchAllSpells(allSpellUrls, c, r) {
+function fetchAllSpells(allSpellUrls, c, r, spellIndex) {
   return Promise.all(allSpellUrls).then((response) => {
     spells = [];
     let conc;
@@ -65,25 +106,36 @@ function fetchAllSpells(allSpellUrls, c, r) {
         ritu = e.data.ritual;
       }
 
-      if (wizard != -1 || !wizard) {
-        if (c && !r) {
-          if (conc) {
+      console.log(`spellIndex inside fetchAllSpells`);
+      console.log(spellIndex);
+      const check = checkIndex(spellIndex, e.data.index);
+
+      if (check) {
+        if (wizard != -1 || !wizard) {
+          if (c && !r) {
+            if (conc) {
+              spells.push(e.data);
+            }
+          } else if (r && !c) {
+            if (ritu) {
+              spells.push(e.data);
+            }
+          } else if (r && c) {
+            if (ritu || conc) {
+              spells.push(e.data);
+            }
+          } else {
             spells.push(e.data);
           }
-        } else if (r && !c) {
-          if (ritu) {
-            spells.push(e.data);
-          }
-        } else if (r && c) {
-          if (ritu || conc) {
-            spells.push(e.data);
-          }
-        } else {
-          spells.push(e.data);
         }
       }
     });
 
     return spells;
   });
+}
+
+function checkIndex(indexList, index) {
+  const check = !indexList.some((spell) => spell.index == index);
+  return check;
 }
