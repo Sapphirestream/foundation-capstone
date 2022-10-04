@@ -92,7 +92,7 @@ module.exports = {
 
   getBookSpells: (req, res) => {
     const { level, school, conc, ritu, all } = req.query;
-    let spells = [];
+    let allBookSpells = [];
     let sqlWhere = "";
 
     if (all == "false") {
@@ -101,9 +101,56 @@ module.exports = {
 
     console.log(sqlWhere);
 
-    res.status(200).send(spells);
+    sequelize
+      .query(
+        `select index FROM spellbook
+      WHERE homebrew IS false${sqlWhere};`
+      )
+      .then(async (dbRes) => {
+        let allSpellUrls = [];
+
+        dbRes[0].forEach((e) => {
+          const spellUrl = "http://www.dnd5eapi.co/api/spells/" + e.index;
+          console.log(spellUrl);
+          allSpellUrls.push(axios.get(spellUrl));
+        });
+
+        //retrieve all Canon spells from API
+        allBookSpells = await fetchBookSpells(allSpellUrls);
+
+        //retrieve HOMEBREW spells from DB
+        await sequelize
+          .query(
+            `select * FROM spellbook
+          JOIN homebrew
+          ON spellbook.spellbook_id = homebrew.spellbook_id
+          WHERE homebrew IS true${sqlWhere};`
+          )
+          .then((hbRes) => {
+            //format spells to work with spellbuilder & add to allBookSpells
+            hbRes[0].forEach((hb, i) => {
+              allBookSpells.push(formatHomeBrew(hb));
+            });
+          })
+          .catch((err) => console.log(err));
+
+        //console.log(allBookSpells);
+        res.status(200).send(allBookSpells);
+      })
+      .catch((err) => console.log(err));
   },
 };
+
+function fetchBookSpells(allSpellUrls) {
+  return Promise.all(allSpellUrls).then((response) => {
+    spells = [];
+
+    response.forEach((e) => {
+      spells.push(e.data);
+    });
+    return spells;
+  });
+}
 
 function fetchAllSpells(allSpellUrls, c, r, spellIndex) {
   return Promise.all(allSpellUrls).then((response) => {
@@ -193,7 +240,11 @@ function bookSqlWhereFlag(sql, check, array) {
   if (typeof array == "object" || check == "level") {
     sql += ` AND ${check} IN (`;
     for (let i = 0; i < array.length; i++) {
-      sql += `${array[i]}`;
+      if (check == "level") {
+        sql += `${array[i]}`;
+      } else {
+        sql += `'${array[i]}'`;
+      }
       if (i != array.length - 1) {
         sql += ", ";
       } else {
@@ -204,4 +255,41 @@ function bookSqlWhereFlag(sql, check, array) {
     sql += ` AND ${check} IN ('${array}')`;
   }
   return sql;
+}
+
+function formatHomeBrew(hb) {
+  const {
+    level,
+    school,
+    name,
+    concentration,
+    ritual,
+    range,
+    damage,
+    dc,
+    index,
+    description,
+    higher_level,
+    homebrew,
+  } = hb;
+
+  //split desc along new lines
+  let desc = description.split(/\r?\n/);
+
+  const newFormat = {
+    level: level,
+    school: { name: school },
+    name: name,
+    concentration: concentration,
+    ritual: ritual,
+    range: range,
+    damage: damage,
+    dc: { dc_type: { name: dc } },
+    index: index,
+    desc: desc,
+    higher_level: higher_level,
+    homebrew: homebrew,
+  };
+
+  return newFormat;
 }

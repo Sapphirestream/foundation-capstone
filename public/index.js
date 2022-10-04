@@ -99,6 +99,8 @@ function pullAllSpells(e) {
             createSpell(res.data[i], book, b);
           }
         }
+
+        cleanNodes(allSpellsBox);
       })
       .catch((err) => {
         console.log(err);
@@ -108,6 +110,7 @@ function pullAllSpells(e) {
 
 function pullBookSpells(e) {
   const book = true;
+  spellBookBox.innerHTML = "";
 
   if (e.target.classList.contains("book")) {
     //if the button is the All Button
@@ -158,6 +161,15 @@ function pullBookSpells(e) {
     .get(`/api/book/${query}`)
     .then((res) => {
       console.log(res.data);
+
+      for (let b = 0; b <= 9; b++) {
+        createLvlLabels(selectText, book, b);
+        for (let i = 0; i < res.data.length; i++) {
+          createSpell(res.data[i], book, b);
+        }
+      }
+
+      cleanNodes(spellBookBox);
     })
     .catch((err) => {
       console.log(err);
@@ -302,15 +314,21 @@ function createSpell(spell, book, lvl) {
   const damage = document.createElement("p");
   damageHold.appendChild(damage);
 
-  if (spell.damage) {
-    if (spell.damage.damage_at_character_level) {
-      damage.textContent = spell.damage.damage_at_character_level[5];
-    }
-    if (spell.damage.damage_at_slot_level) {
-      damage.textContent = spell.damage.damage_at_slot_level[spell.level];
+  if (spell.homebrew) {
+    if (spell.damage != null) {
+      damage.textContent = spell.damage;
     }
   } else {
-    damage.textContent = "-";
+    if (spell.damage) {
+      if (spell.damage.damage_at_character_level) {
+        damage.textContent = spell.damage.damage_at_character_level[5];
+      }
+      if (spell.damage.damage_at_slot_level) {
+        damage.textContent = spell.damage.damage_at_slot_level[spell.level];
+      }
+    } else {
+      damage.textContent = "-";
+    }
   }
 
   //cost
@@ -336,7 +354,11 @@ function createSpell(spell, book, lvl) {
   saveHold.appendChild(spellSave);
 
   if (spell.dc) {
-    spellSave.textContent = `${spell.dc.dc_type.name} SAVE`;
+    if (spell.dc.dc_type.name != null) {
+      spellSave.textContent = `${spell.dc.dc_type.name} SAVE`;
+    } else {
+      spellSave.textContent = "-";
+    }
   } else {
     spellSave.textContent = "-";
   }
@@ -379,7 +401,7 @@ function createSpell(spell, book, lvl) {
     descPara.classList.add(`${spell.index}`);
   });
 
-  if (spell.higher_level) {
+  if (spell.higher_level && spell.higher_level != null) {
     const upCast = document.createElement("p");
     extendedSpell.appendChild(upCast);
     upCast.classList.add("desc");
@@ -415,6 +437,7 @@ function createSpell(spell, book, lvl) {
 
 function createLvlLabels(selectText, book, b) {
   const label = document.createElement("h3");
+  label.classList.add("label");
   //console.log(selectText);
   let numFlag = false;
 
@@ -571,6 +594,8 @@ function addSpelltoBook(e) {
     .catch((err) => {
       console.log(`${spell} error`, err);
     });
+
+  pullBookSpells(e);
 }
 
 function bookQuery(btnText, test, flag) {
@@ -587,4 +612,33 @@ function bookQuery(btnText, test, flag) {
   }
 
   return query;
+}
+
+function cleanNodes(box) {
+  nodes = box.childNodes;
+
+  for (let i = 0; i < nodes.length - 1; i++) {
+    if (
+      nodes[i].classList.contains("label") &&
+      nodes[i].nextSibling.classList.contains("label")
+    ) {
+      nodes[i].remove();
+      i--;
+    }
+  }
+
+  if (nodes[nodes.length - 1].classList.contains("label")) {
+    nodes[nodes.length - 1].remove();
+  }
+
+  if (nodes.length == 0) {
+    const noSpellsHolder = document.createElement("div");
+    noSpellsHolder.classList.add("flex");
+    noSpellsHolder.classList.add("center");
+    box.appendChild(noSpellsHolder);
+
+    const noSpells = document.createElement("h3");
+    noSpells.textContent = "No Spells Selected!";
+    noSpellsHolder.appendChild(noSpells);
+  }
 }
