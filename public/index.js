@@ -1,12 +1,11 @@
-//const { default: axios } = require("axios");
-
-//const axios = require("axios");
 const allBtns = document.querySelectorAll(".all");
 const allSpellsBox = document.querySelector("#all-spells-holder");
 const spellBookBox = document.querySelector("#spell-book-holder");
 const allConcBtn = document.querySelector(".all-conc");
 const allRituBtn = document.querySelector(".all-ritu");
 const allAllBtn = document.querySelector(".all-all");
+const bookBtns = document.querySelectorAll(".book");
+const bookAllBtn = document.querySelector(".book-all");
 
 WIZ_SCHOOL = "Necromancy";
 
@@ -23,6 +22,12 @@ for (let i = 0; i < allBtns.length; i++) {
 allConcBtn.addEventListener("click", pullAllSpells);
 allRituBtn.addEventListener("click", pullAllSpells);
 allAllBtn.addEventListener("click", pullAllSpells);
+
+for (let i = 0; i < bookBtns.length; i++) {
+  bookBtns[i].addEventListener("click", pullBookSpells);
+}
+
+//bookAllBtn.addEventListener("click", pullBookSpells);
 
 //ALL SPELLS btns minus the "all" btns
 function pullAllSpells(e) {
@@ -68,9 +73,9 @@ function pullAllSpells(e) {
   allFlag = allAllBtn.classList.contains("selected-all");
 
   //turn selected buttons into a string array
-  for (let i = 0; i < selected.length; i++) {
-    selectText[i] = selected[i].innerText;
-  }
+  selected.forEach((btn, i) => {
+    selectText[i] = btn.innerText;
+  });
 
   //find query from selected buttons
   const query = findPath(selectText);
@@ -99,6 +104,64 @@ function pullAllSpells(e) {
         console.log(err);
       });
   }
+}
+
+function pullBookSpells(e) {
+  const book = true;
+
+  if (e.target.classList.contains("book")) {
+    //if the button is the All Button
+    if (e.target.classList.contains("book-all")) {
+      if (e.target.classList.contains("selected-book-btn")) {
+        //if the all button is being UNSELECTED
+        e.target.classList.remove("selected-book-btn");
+      } else {
+        //if the all button is being SELECTED
+        const select = document.querySelectorAll(".selected-book-btn");
+        select.forEach((elem) => {
+          elem.classList.remove("selected-book-btn");
+        });
+
+        e.target.classList.add("selected-book-btn");
+      }
+    } else {
+      //every other button selection
+      e.target.classList.toggle("selected-book-btn");
+      bookAllBtn.classList.remove("selected-book-btn");
+    }
+  }
+
+  //collect all selected btns for books
+  const selected = document.querySelectorAll(".selected-book-btn");
+  const selectText = [];
+
+  //turn selected btns into a string array
+  selected.forEach((btn, i) => {
+    selectText[i] = btn.innerText;
+  });
+
+  //create query for spellbook
+  let query = findPath(selectText);
+
+  //adding extra to the query
+  query += bookQuery(selectText, "CON", "conc");
+  query += bookQuery(selectText, "-R-", "ritu");
+  query += bookQuery(selectText, "ALL", "all");
+
+  if (query.startsWith("&")) {
+    query = query.replace("&", "?");
+  }
+
+  console.log(query);
+
+  axios
+    .get(`/api/book/${query}`)
+    .then((res) => {
+      console.log(res.data);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
 // give string array of button text and returns the query path
@@ -508,4 +571,20 @@ function addSpelltoBook(e) {
     .catch((err) => {
       console.log(`${spell} error`, err);
     });
+}
+
+function bookQuery(btnText, test, flag) {
+  let query = "";
+
+  if (
+    btnText.some((btn) => {
+      return btn == test;
+    })
+  ) {
+    query += `&${flag}=true`;
+  } else {
+    query += `&${flag}=false`;
+  }
+
+  return query;
 }
