@@ -112,7 +112,7 @@ button:hover {
 }
 
 #add-custom{
-    width: 160px;
+    width: 200px;
     height: 30px;
     font-size: 16px;
     margin: 15px;
@@ -141,7 +141,8 @@ h3{
     width: 35px;
     height: 35px;
     margin-right: 15px;
-    background-color: #919191;
+    /* background-color: #919191; */
+    background-size: contain;
 }
 
 .spell-hold {
@@ -214,3 +215,36 @@ p {
 .red {
     color: darkred;
 }
+
+.Illusion {
+    background-image: url("/pictures/illusion.png");
+}
+
+.Abjuration {
+    background-image: url("/pictures/abjuration.png")
+}
+
+.Conjuration {
+    background-image: url("/pictures/conjuration.png")
+}
+
+.Divination {
+    background-image: url("/pictures/divination.png")
+}
+
+.Enchantment {
+    background-image: url("/pictures/enchantment.png")
+}
+
+.Evocation {
+    background-image: url("/pictures/evocation.png")
+}
+
+.Necromancy {
+    background-image: url("/pictures/necromancy.png")
+}
+
+.Transmutation {
+    background-image: url("/pictures/transmutation.png")
+}
+

@@ -1,10 +1,12 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use(express.static(path.resolve("./public")));
 
 const { SERVER_PORT, CONNECTION_STRING } = process.env;
 
@@ -23,6 +25,7 @@ const {
   getWizardSpells,
   addSpelltoBook,
   getBookSpells,
+  deleteSpellfromBook,
 } = require("./controller.js");
 const { home, styles, reset, js } = require("./loader.js");
 const { seed } = require("./seed.js");
@@ -40,6 +43,7 @@ app.post("/api/spells/:index", addSpelltoBook);
 
 //SPELLBOOK
 app.get("/api/book/", getBookSpells);
+app.delete("/api/book/:index", deleteSpellfromBook);
 
 const port = process.env.PORT || SERVER_PORT;
 

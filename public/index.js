@@ -27,8 +27,6 @@ for (let i = 0; i < bookBtns.length; i++) {
   bookBtns[i].addEventListener("click", pullBookSpells);
 }
 
-//bookAllBtn.addEventListener("click", pullBookSpells);
-
 //ALL SPELLS btns minus the "all" btns
 function pullAllSpells(e) {
   //console.log(e);
@@ -142,6 +140,9 @@ function pullBookSpells(e) {
   selected.forEach((btn, i) => {
     selectText[i] = btn.innerText;
   });
+
+  //exit the function if nothing is selected
+  if (selectText.length == 0) return;
 
   //create query for spellbook
   let query = findPath(selectText);
@@ -264,25 +265,18 @@ function createSpell(spell, book, lvl) {
   spellSumm.classList.add("spell-min");
   spellHolder.appendChild(spellSumm);
 
-  //icon for the school of spell
-  const spellIcon = document.createElement("img");
-  spellIcon.classList.add("spell-icon");
-  spellIcon.classList.add(spell.school.name);
-  spellSumm.appendChild(spellIcon);
+  // create Spell Icon
+  createHtml("img", null, spellSumm, ["spell-icon", spell.school.name]);
 
   //name of spell
   const nameHold = document.createElement("div");
   spellSumm.appendChild(nameHold);
 
-  const spellName = document.createElement("h4");
-  spellName.textContent = spell.name;
-  nameHold.appendChild(spellName);
+  // create Spell Name
+  createHtml("h4", spell.name, nameHold, null);
 
-  //spell school
-  const spellSchool = document.createElement("p");
-  spellSchool.classList.add("grey");
-  spellSchool.textContent = spell.school.name;
-  nameHold.appendChild(spellSchool);
+  //create spell school
+  createHtml("p", spell.school.name, nameHold, "grey");
 
   //concentration & ritual
   const conc_ritu = document.createElement("p");
@@ -299,11 +293,7 @@ function createSpell(spell, book, lvl) {
     conc_ritu.classList.add("red");
   }
 
-  //range
-  const range = document.createElement("p");
-  range.classList.add("w50");
-  range.textContent = spell.range;
-  spellSumm.appendChild(range);
+  createHtml("p", spell.range, spellSumm, "w50");
 
   //damage + cost
   const damageHold = document.createElement("div");
@@ -332,15 +322,15 @@ function createSpell(spell, book, lvl) {
   }
 
   //cost
+  let gold = spell.level * 50;
+
   const cost = document.createElement("p");
   cost.classList.add("grey");
   damageHold.appendChild(cost);
-  let gold = spell.level * 50;
 
   if (spell.school.name == WIZ_SCHOOL) {
     gold = gold / 2;
   }
-
   if (gold > 0) {
     cost.textContent = `${gold}g`;
   }
@@ -579,6 +569,17 @@ function expandSpell(e) {
 
 function removeSpell(e) {
   console.log("remove spell function");
+  const spell = e.target.classList[1];
+
+  axios
+    .delete(`/api/book/${spell}`)
+    .then((res) => {
+      console.log(`deleted ${spell}`);
+      e.target.parentNode.parentNode.parentNode.remove();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
 //add spell to spell book from all spells
@@ -588,14 +589,15 @@ function addSpelltoBook(e) {
   axios
     .post(`/api/spells/${spell}`)
     .then(() => {
+      pullBookSpells(e);
+    })
+    .then(() => {
       console.log(`${spell} added!`);
       e.target.parentNode.parentNode.parentNode.remove();
     })
     .catch((err) => {
       console.log(`${spell} error`, err);
     });
-
-  pullBookSpells(e);
 }
 
 function bookQuery(btnText, test, flag) {
@@ -641,4 +643,24 @@ function cleanNodes(box) {
     noSpells.textContent = "No Spells Selected!";
     noSpellsHolder.appendChild(noSpells);
   }
+}
+
+function createHtml(htmlType, value, parent, classAdd) {
+  const elem = document.createElement(htmlType);
+
+  if (value != null) {
+    elem.textContent = value;
+  }
+
+  if (classAdd != null) {
+    if (typeof classAdd === "object") {
+      classAdd.forEach((e) => {
+        elem.classList.add(e);
+      });
+    } else {
+      elem.classList.add(classAdd);
+    }
+  }
+
+  parent.appendChild(elem);
 }

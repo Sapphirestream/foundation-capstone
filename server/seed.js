@@ -33,7 +33,7 @@ module.exports = {
         
         CREATE TABLE homebrew(
                     homebrew_id SERIAL PRIMARY KEY,
-                    spellbook_id INTEGER NOT NULL REFERENCES spellbook(spellbook_id),
+                    spellbook_id INTEGER NOT NULL REFERENCES spellbook(spellbook_id) ON DELETE CASCADE,
                     name VARCHAR(255) NOT NULL,
                     range VARCHAR(255) NOT NULL,
                     damage VARCHAR(255),

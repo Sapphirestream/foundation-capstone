@@ -41,7 +41,7 @@ module.exports = {
       let allSpellUrls = [];
 
       //cycle over each spell individually
-      res1.data.results.forEach((e, i) => {
+      res1.data.results.forEach((e) => {
         const spellUrl = "http://www.dnd5eapi.co" + e.url;
         allSpellUrls.push(axios.get(spellUrl));
       });
@@ -68,7 +68,6 @@ module.exports = {
       //console.log(index, level, concentration, ritual, school);
 
       sequelize.query(`SELECT index FROM spellbook`).then((res) => {
-        //console.log(res[0]);
         spellIndex = res[0];
         const check = checkIndex(spellIndex, index);
         console.log(`${index}: ${check}`);
@@ -90,6 +89,7 @@ module.exports = {
     res.sendStatus(200);
   },
 
+  //GET BOOK SPELLS
   getBookSpells: (req, res) => {
     const { level, school, conc, ritu, all } = req.query;
     let allBookSpells = [];
@@ -111,7 +111,7 @@ module.exports = {
 
         dbRes[0].forEach((e) => {
           const spellUrl = "http://www.dnd5eapi.co/api/spells/" + e.index;
-          console.log(spellUrl);
+          //console.log(spellUrl);
           allSpellUrls.push(axios.get(spellUrl));
         });
 
@@ -139,9 +139,33 @@ module.exports = {
       })
       .catch((err) => console.log(err));
   },
+
+  deleteSpellfromBook: (req, res) => {
+    const { index } = req.params;
+
+    sequelize
+      .query(
+        `DELETE FROM spellbook
+      WHERE index = '${index}';`
+      )
+      .then((dbRes) => {
+        console.log(dbRes[0]);
+      })
+      .catch((err) => console.log(`error deleting ${index}`, err));
+
+    sequelize
+      .query(`SELECT index FROM spellbook`)
+      .then((res) => {
+        spellIndex = res[0];
+      })
+      .catch((err) => console.log(`error initializing spellbook`, err));
+
+    res.sendStatus(200);
+  },
 };
 
 function fetchBookSpells(allSpellUrls) {
+  console.log(allSpellUrls);
   return Promise.all(allSpellUrls).then((response) => {
     spells = [];
 
@@ -276,9 +300,12 @@ function formatHomeBrew(hb) {
   //split desc along new lines
   let desc = description.split(/\r?\n/);
 
+  //capitalize the school name to match Class
+  const school_name = school.charAt(0).toUpperCase() + school.slice(1);
+
   const newFormat = {
     level: level,
-    school: { name: school },
+    school: { name: school_name },
     name: name,
     concentration: concentration,
     ritual: ritual,
