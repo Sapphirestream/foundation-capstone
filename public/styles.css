@@ -306,3 +306,17 @@ p {
     font-size: 16px;
     margin: 15px;
 }
+
+#spell-success{
+    margin-bottom: 10px;
+}
+
+.space-btwn{
+    justify-content: space-between;
+}
+
+.no-hover:hover {
+    background-color:transparent;
+    color: #919191;
+    font-weight: normal;
+}

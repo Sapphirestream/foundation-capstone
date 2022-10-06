@@ -51,7 +51,7 @@ module.exports = {
               ('blur', 2, 'illusion', true, false, false),
               ('gleamsilver-s-ward-of-warming', 2, 'abjuration', false, true, true),
               ('fear', 3, 'illusion', true, false, false),
-              ('kora-s-necromantic-blast', 3, 'evocation', false, false, true);
+              ('kora-s-necromantic-blast', 3, 'necromancy', false, false, true);
         
         INSERT INTO homebrew(spellbook_id, name, range, damage, dc, description, higher_level)
                       VALUES (7, 'Gleamsilvers Ward of Warming', 'Touch', null, null, 'You draw a sigil on a flat surface that radiates comforting warmth. The warmth surrounds the sigil in a 30 foot radius sphere, melting any nonmagical ice and snow inside of it.

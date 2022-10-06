@@ -26,6 +26,7 @@ const {
   addSpelltoBook,
   getBookSpells,
   deleteSpellfromBook,
+  addHomebrew,
 } = require("./controller.js");
 const { home, styles, reset, js } = require("./loader.js");
 const { seed } = require("./seed.js");
@@ -44,6 +45,7 @@ app.post("/api/spells/:index", addSpelltoBook);
 //SPELLBOOK
 app.get("/api/book/", getBookSpells);
 app.delete("/api/book/:index", deleteSpellfromBook);
+app.post("/api/book/homebrew/", addHomebrew);
 
 const port = process.env.PORT || SERVER_PORT;
 

@@ -12,6 +12,7 @@ const submitHbBtn = document.querySelector("#submit-hb");
 const clearHbBtn = document.querySelector("#clear-hb");
 const hbNotif = document.querySelector("#hb-notif");
 const hbDamage = document.getElementById("dmg");
+const spellSuccess = document.getElementById("spell-success");
 
 WIZ_SCHOOL = "Necromancy";
 WIZ_LEVEL = 5;
@@ -41,7 +42,6 @@ hbDamage.addEventListener("click", toggleDmg);
 
 //get ALL SPELLS
 function pullAllSpells(e) {
-  //console.log(e);
   const book = false;
 
   //toggle clicked button for ALL SPELLS
@@ -89,7 +89,6 @@ function pullAllSpells(e) {
 
   //find query from selected buttons
   const query = findPath(selectText);
-  console.log(query);
   allSpellsBox.innerHTML = "";
 
   if (
@@ -101,8 +100,6 @@ function pullAllSpells(e) {
     axios
       .post(`/api/spells/`, { query, concFlag, rituFlag })
       .then((res) => {
-        console.log(res.data);
-
         for (let b = 0; b <= 9; b++) {
           createLvlLabels(selectText, book, b);
           for (let i = 0; i < res.data.length; i++) {
@@ -169,13 +166,9 @@ function pullBookSpells(e) {
     query = query.replace("&", "?");
   }
 
-  console.log(query);
-
   axios
     .get(`/api/book/${query}`)
     .then((res) => {
-      console.log(res.data);
-
       for (let b = 0; b <= 9; b++) {
         createLvlLabels(selectText, book, b);
         for (let i = 0; i < res.data.length; i++) {
@@ -376,6 +369,17 @@ function createSpell(spell, book, lvl) {
   extendedSpell.appendChild(btnHolder);
   classAdd(btnHolder, ["flex", "right"]);
 
+  if (spell.homebrew) {
+    createHtml("button", "Homebrew Spell", btnHolder, [
+      "remove-btn",
+      "hidden",
+      `${spell.index}`,
+      "no-hover",
+    ]);
+    btnHolder.classList.remove("right");
+    btnHolder.classList.add("space-btwn");
+  }
+
   const spellBtn = document.createElement("button");
   btnHolder.appendChild(spellBtn);
   classAdd(spellBtn, ["remove-btn", "hidden", `${spell.index}`]);
@@ -422,8 +426,6 @@ function createLvlLabels(selectText, book, b) {
   } else if (selectText.includes("9TH")) {
     numFlag = true;
   }
-
-  //console.log(`numFlag = ${numFlag}`);
 
   if (numFlag) {
     switch (b) {
@@ -534,7 +536,6 @@ function expandSpell(e) {
 
 //delete spell from spellbook
 function removeSpell(e) {
-  console.log("remove spell function");
   const spell = e.target.classList[1];
 
   axios
@@ -551,15 +552,13 @@ function removeSpell(e) {
 //add spell to spell book from all spells
 function addSpelltoBook(e) {
   const spell = e.target.classList[1];
-  //console.log(`/api/spells/${spell}`);
+
   axios
     .post(`/api/spells/${spell}`)
     .then(() => {
-      pullBookSpells(e);
-    })
-    .then(() => {
       console.log(`${spell} added!`);
       e.target.parentNode.parentNode.parentNode.remove();
+      //const refreshBooks = setTimeout(pullBookSpells(e), 3000);
     })
     .catch((err) => {
       console.log(`${spell} error`, err);
@@ -658,6 +657,7 @@ function submitHomebrew() {
 
   //check all inputs are valid
   let error = "";
+  hbNotif.textContent = "";
 
   error = checkInput(spellNameInput.value, 50, error, "Spell Name");
   error = checkInput(rangeInput.value, 20, error, "Range");
@@ -666,11 +666,9 @@ function submitHomebrew() {
   error = checkInput(damageInput.value, 20, error, "Damage");
 
   if (error != "") {
-    hbNotif.classList.remove("hidden");
     hbNotif.textContent = `ERROR: ${error}`;
     return;
   } else {
-    hbNotif.classList.add("hidden");
     hbNotif.textContent = "";
   }
 
@@ -709,7 +707,17 @@ function submitHomebrew() {
     homebrew: true,
   };
 
-  console.log(newSpell);
+  //send newSpell to the server
+  axios
+    .post("/api/book/homebrew/", newSpell)
+    .then((res) => {
+      clearHb();
+      spellSuccess.textContent = res.data;
+      const spellTO = setTimeout(succussTimeout, 5000);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 }
 
 //check that User Input is correct
@@ -719,7 +727,10 @@ function checkInput(input, length, error, value) {
     error += `${value} is too long // `;
   }
 
-  if (input.length <= 0 && (value == "Range" || value == "Spell Name")) {
+  if (
+    input.length <= 0 &&
+    (value == "Range" || value == "Spell Name" || value == "Description")
+  ) {
     error += `${value} must exist // `;
   } else {
     //check that it starts with an alphebetic character
@@ -740,7 +751,6 @@ function checkInput(input, length, error, value) {
     error += `${value} includes the value " // `;
   }
 
-  //console.log(`${input} checked: ${flag}`);
   return error;
 }
 
@@ -752,7 +762,6 @@ function createIndex(name) {
   index = index.replaceAll(" ", "-");
   index = index.replaceAll(regex, "-");
 
-  //console.log(`${index} created from ${name}`);
   return index;
 }
 
@@ -774,6 +783,9 @@ function clearHb() {
 
   //disable damage input
   document.getElementById("dmg-input").setAttribute("disabled", "");
+
+  //clear notification
+  hbNotif.textContent = "";
 }
 
 function toggleDmg() {
@@ -782,4 +794,8 @@ function toggleDmg() {
   } else {
     document.getElementById("dmg-input").setAttribute("disabled", "");
   }
+}
+
+function succussTimeout() {
+  spellSuccess.textContent = "";
 }

@@ -65,6 +65,9 @@
         <div class="flex center">
             <button id="add-hb" class="front-btn">Add Homebrew Spell</button>
         </div>
+        <div class="flex center">
+            <h3 id="spell-success"></h3>
+        </div>
         <div id="hb-hold" class="hidden">
             <div class="flex">
                 <h4 id="hb-name">Spell Name</h4>
@@ -86,14 +89,14 @@
                 </select>      
                 <p class="m5 mt9">School</p>
                 <select class="m5 w120" id="school-input">
-                    <option value="Illusion">Illusion</option>
-                    <option value="Abjuration">Abjuration</option>
-                    <option value="Conjuration">Conjuration</option>
-                    <option value="Divination">Divination</option>
-                    <option value="Enchantment">Enchantment</option>
-                    <option value="Evocation">Evocation</option>
-                    <option value="Necromancy">Necromancy</option>
-                    <option value="Transmutation">Transmutation</option>
+                    <option value="illusion">Illusion</option>
+                    <option value="abjuration">Abjuration</option>
+                    <option value="conjuration">Conjuration</option>
+                    <option value="divination">Divination</option>
+                    <option value="enchantment">Enchantment</option>
+                    <option value="evocation">Evocation</option>
+                    <option value="necromancy">Necromancy</option>
+                    <option value="transmutation">Transmutation</option>
                 </select>
                 <p class="m5 mt9">Save</p>
                 <select class="m5 w120" id="dc-input">
@@ -130,7 +133,7 @@
                 <p class="m5 w43">Upcast</p>
                 <input id="upcast-input" placeholder="Enter What Happens When Casting at a Higher Level Here..."></input>
             </div>
-            <div class="flex center"><p  id="hb-notif" class="hidden mt9">Spell Added!</p></div>
+            <div class="flex center"><p id="hb-notif" class="mt9"></p></div>
             <div class="flex center">
             <button id="submit-hb" class="front-btn">Submit Spell</button>
             <button id="clear-hb" class="front-btn">Clear Spell</button>
@@ -175,8 +178,7 @@
 
 </main>
 
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="/js"></script>
-<!-- <script src="./index.js"></script> -->
 </body>
 </html> 

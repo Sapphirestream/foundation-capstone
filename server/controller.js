@@ -19,23 +19,15 @@ let allWizardSpells = [];
 let spellIndex = [];
 
 //initialize spellbook
-sequelize
-  .query(`SELECT index FROM spellbook`)
-  .then((res) => {
-    spellIndex = res[0];
-  })
-  .catch((err) => console.log(`error initializing spellbook`, err));
+getSpellIndex();
 
 module.exports = {
   //GET WIZARD SPELLS
   getWizardSpells: (req, res) => {
-    // console.log(req.body);
     const { query, concFlag, rituFlag } = req.body;
 
     let path = `http://www.dnd5eapi.co/api/spells/`;
     path += query;
-
-    // console.log(path);
 
     axios.get(path).then(async (res1) => {
       let allSpellUrls = [];
@@ -65,12 +57,9 @@ module.exports = {
       const { level, concentration, ritual } = res.data;
       const school = res.data.school.name;
 
-      //console.log(index, level, concentration, ritual, school);
-
       sequelize.query(`SELECT index FROM spellbook`).then((res) => {
         spellIndex = res[0];
         const check = checkIndex(spellIndex, index);
-        console.log(`${index}: ${check}`);
 
         if (check == true) {
           sequelize
@@ -99,8 +88,6 @@ module.exports = {
       sqlWhere = bookSqlWhere(level, school, conc, ritu);
     }
 
-    console.log(sqlWhere);
-
     sequelize
       .query(
         `select index FROM spellbook
@@ -111,7 +98,6 @@ module.exports = {
 
         dbRes[0].forEach((e) => {
           const spellUrl = "http://www.dnd5eapi.co/api/spells/" + e.index;
-          //console.log(spellUrl);
           allSpellUrls.push(axios.get(spellUrl));
         });
 
@@ -134,12 +120,12 @@ module.exports = {
           })
           .catch((err) => console.log(err));
 
-        //console.log(allBookSpells);
         res.status(200).send(allBookSpells);
       })
       .catch((err) => console.log(err));
   },
 
+  //Delete spells from spell book
   deleteSpellfromBook: (req, res) => {
     const { index } = req.params;
 
@@ -148,9 +134,7 @@ module.exports = {
         `DELETE FROM spellbook
       WHERE index = '${index}';`
       )
-      .then((dbRes) => {
-        console.log(dbRes[0]);
-      })
+      .then((dbRes) => {})
       .catch((err) => console.log(`error deleting ${index}`, err));
 
     sequelize
@@ -162,10 +146,57 @@ module.exports = {
 
     res.sendStatus(200);
   },
+
+  //add homebrew spell
+  addHomebrew: async (req, res) => {
+    const { index, name } = req.body;
+
+    //check if spell is already in database
+    getSpellIndex();
+    const existCheck = spellIndex.some((elem) => elem.index == index);
+    if (existCheck) {
+      res.send("Spell already exists!").status(400);
+      return;
+    }
+
+    if (!existCheck) {
+      //get spell info
+      let {
+        level,
+        school,
+        concentration,
+        ritual,
+        range,
+        damage,
+        dc,
+        description,
+        higher_level,
+      } = req.body;
+
+      if (damage != null) damage = `'${damage}'`;
+      if (dc != null) dc = `'${dc}'`;
+      if (higher_level != null) higher_level = `'${higher_level}'`;
+
+      sequelize
+        .query(
+          `INSERT INTO spellbook(index, level, school, concentration, ritual, homebrew)
+        VALUES('${index}', ${+level}, '${school}', ${concentration}, ${ritual}, true);
+
+        INSERT INTO homebrew(spellbook_id, name, range, damage, dc, description, higher_level)
+        VALUES ((SELECT spellbook_id FROM spellbook WHERE index = '${index}'), '${name}', '${range}', ${damage}, ${dc}, '${description}', ${higher_level})`
+        )
+        .then((res) => {})
+        .catch((err) => console.log(`error adding spell`, err));
+
+      res.send(`${name} successfully added!`).status(200);
+    } else {
+      res.send(`${name} already exists!`).status(200);
+    }
+  },
 };
 
+//collects all Book promises
 function fetchBookSpells(allSpellUrls) {
-  console.log(allSpellUrls);
   return Promise.all(allSpellUrls).then((response) => {
     spells = [];
 
@@ -176,6 +207,7 @@ function fetchBookSpells(allSpellUrls) {
   });
 }
 
+//collects all Spell promises
 function fetchAllSpells(allSpellUrls, c, r, spellIndex) {
   return Promise.all(allSpellUrls).then((response) => {
     spells = [];
@@ -196,7 +228,6 @@ function fetchAllSpells(allSpellUrls, c, r, spellIndex) {
         ritu = e.data.ritual;
       }
 
-      //console.log(spellIndex);
       const check = checkIndex(spellIndex, e.data.index);
 
       if (check) {
@@ -224,6 +255,17 @@ function fetchAllSpells(allSpellUrls, c, r, spellIndex) {
   });
 }
 
+//update spellIndex with SQL
+function getSpellIndex() {
+  sequelize
+    .query(`SELECT index FROM spellbook`)
+    .then((res) => {
+      spellIndex = res[0];
+    })
+    .catch((err) => console.log(`error initializing spellbook`, err));
+}
+
+//checks an object for an index
 function checkIndex(indexList, index) {
   const check = !indexList.some((spell) => spell.index == index);
   return check;
