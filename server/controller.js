@@ -281,6 +281,7 @@ function bookSqlWhereFlag(sql, check, array) {
   return sql;
 }
 
+//put called hb into correct object format
 function formatHomeBrew(hb) {
   const {
     level,

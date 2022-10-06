@@ -6,8 +6,15 @@ const allRituBtn = document.querySelector(".all-ritu");
 const allAllBtn = document.querySelector(".all-all");
 const bookBtns = document.querySelectorAll(".book");
 const bookAllBtn = document.querySelector(".book-all");
+const addHbBtn = document.querySelector("#add-hb");
+const hbBox = document.querySelector("#hb-hold");
+const submitHbBtn = document.querySelector("#submit-hb");
+const clearHbBtn = document.querySelector("#clear-hb");
+const hbNotif = document.querySelector("#hb-notif");
+const hbDamage = document.getElementById("dmg");
 
 WIZ_SCHOOL = "Necromancy";
+WIZ_LEVEL = 5;
 
 concFlag = false;
 rituFlag = false;
@@ -27,7 +34,12 @@ for (let i = 0; i < bookBtns.length; i++) {
   bookBtns[i].addEventListener("click", pullBookSpells);
 }
 
-//ALL SPELLS btns minus the "all" btns
+addHbBtn.addEventListener("click", showHomebrew);
+submitHbBtn.addEventListener("click", submitHomebrew);
+clearHbBtn.addEventListener("click", clearHb);
+hbDamage.addEventListener("click", toggleDmg);
+
+//get ALL SPELLS
 function pullAllSpells(e) {
   //console.log(e);
   const book = false;
@@ -106,6 +118,7 @@ function pullAllSpells(e) {
   }
 }
 
+//get BOOK SPELLS
 function pullBookSpells(e) {
   const book = true;
   spellBookBox.innerHTML = "";
@@ -245,20 +258,17 @@ function findPath(selected) {
   return path;
 }
 
+//creates each spell display
 function createSpell(spell, book, lvl) {
-  if (spell.level != lvl) {
-    return;
-  }
+  if (spell.level != lvl) return;
 
   //creates the overall holder for the spell
   const spellHolder = document.createElement("section");
   spellHolder.classList.add("spell-hold");
 
-  if (book) {
-    spellBookBox.appendChild(spellHolder);
-  } else {
-    allSpellsBox.appendChild(spellHolder);
-  }
+  book
+    ? spellBookBox.appendChild(spellHolder)
+    : allSpellsBox.appendChild(spellHolder);
 
   //creates the holder for the spell quick details
   const spellSumm = document.createElement("div");
@@ -279,20 +289,14 @@ function createSpell(spell, book, lvl) {
   createHtml("p", spell.school.name, nameHold, "grey");
 
   //concentration & ritual
-  const conc_ritu = document.createElement("p");
-  conc_ritu.classList.add("w50");
-  spellSumm.appendChild(conc_ritu);
+  const concHolder = document.createElement("div");
+  concHolder.classList.add("w50");
+  spellSumm.appendChild(concHolder);
 
-  if (spell.concentration == true) {
-    conc_ritu.textContent = "Conc";
-    conc_ritu.classList.add("green");
-  }
+  if (spell.concentration == true) createHtml("p", "Conc", concHolder, "green");
+  if (spell.ritual == true) createHtml("p", "Ritual", concHolder, "red");
 
-  if (spell.ritual == true) {
-    conc_ritu.textContent = "Ritual";
-    conc_ritu.classList.add("red");
-  }
-
+  //create range
   createHtml("p", spell.range, spellSumm, "w50");
 
   //damage + cost
@@ -301,115 +305,80 @@ function createSpell(spell, book, lvl) {
   spellSumm.appendChild(damageHold);
 
   //damage
-  const damage = document.createElement("p");
-  damageHold.appendChild(damage);
+  let dmg = null;
 
-  if (spell.homebrew) {
-    if (spell.damage != null) {
-      damage.textContent = spell.damage;
-    }
-  } else {
-    if (spell.damage) {
-      if (spell.damage.damage_at_character_level) {
-        damage.textContent = spell.damage.damage_at_character_level[5];
-      }
-      if (spell.damage.damage_at_slot_level) {
-        damage.textContent = spell.damage.damage_at_slot_level[spell.level];
-      }
-    } else {
-      damage.textContent = "-";
-    }
+  if (spell.homebrew) if (spell.damage != null) dmg = spell.damage;
+
+  if (spell.damage) {
+    if (spell.damage.damage_at_character_level)
+      dmg = spell.damage.damage_at_character_level[WIZ_LEVEL];
+    if (spell.damage.damage_at_slot_level)
+      dmg = spell.damage.damage_at_slot_level[spell.level];
   }
+
+  dmg != null
+    ? createHtml("p", dmg, damageHold, "text-center")
+    : createHtml("p", "—", damageHold, "text-center");
 
   //cost
   let gold = spell.level * 50;
 
-  const cost = document.createElement("p");
-  cost.classList.add("grey");
-  damageHold.appendChild(cost);
+  if (spell.school.name == WIZ_SCHOOL) gold = gold / 2;
+  if (gold > 0 && book == false)
+    createHtml("p", `${gold}g`, damageHold, ["grey", "text-center"]);
 
-  if (spell.school.name == WIZ_SCHOOL) {
-    gold = gold / 2;
-  }
-  if (gold > 0) {
-    cost.textContent = `${gold}g`;
-  }
-
-  //save
+  //create save
   const saveHold = document.createElement("div");
   saveHold.classList.add("w120");
   spellSumm.appendChild(saveHold);
 
-  const spellSave = document.createElement("p");
-  saveHold.appendChild(spellSave);
-
-  if (spell.dc) {
-    if (spell.dc.dc_type.name != null) {
-      spellSave.textContent = `${spell.dc.dc_type.name} SAVE`;
-    } else {
-      spellSave.textContent = "-";
-    }
+  if (spell.dc && spell.dc.dc_type.name != null) {
+    createHtml("p", `${spell.dc.dc_type.name} SAVE`, saveHold, "text-center");
   } else {
-    spellSave.textContent = "-";
+    createHtml("p", `—`, saveHold, "text-center");
   }
 
-  //time
-  const spellTime = document.createElement("p");
-  spellTime.classList.add("grey");
-  saveHold.appendChild(spellTime);
-
+  // create Time
   let time = spell.level * 2;
-  if (spell.school.name == WIZ_SCHOOL) {
-    time = time / 2;
-  }
+  if (spell.school.name == WIZ_SCHOOL) time = time / 2;
 
-  if (time > 0) {
-    spellTime.textContent = `${time} hours`;
-  }
+  if (time > 0 && book == false)
+    createHtml("p", `${time} hours`, saveHold, ["grey", "text-center"]);
 
   //PLUS BUTTON
   const plus = document.createElement("p");
-  plus.classList.add("plus");
   plus.textContent = "+";
   spellSumm.appendChild(plus);
   plus.addEventListener("click", expandSpell);
-  plus.classList.add(`${spell.index}`);
+  classAdd(plus, "plus", `${spell.index}`);
 
   // EXTENDED SPELL DISPLAY
   const extendedSpell = document.createElement("div");
   extendedSpell.classList.add("spell-expand");
-  //extendedSpell.classList.add("hidden")
   spellHolder.appendChild(extendedSpell);
   plus.classList.add(`${spell.index}`);
 
+  //create spell description
   spell.desc.forEach((elem) => {
-    const descPara = document.createElement("p");
-    extendedSpell.appendChild(descPara);
-    descPara.classList.add("desc");
-    descPara.classList.add("hidden");
-    descPara.textContent = elem;
-    descPara.classList.add(`${spell.index}`);
+    createHtml("p", elem, extendedSpell, ["desc", "hidden", `${spell.index}`]);
   });
 
+  //create higher level
   if (spell.higher_level && spell.higher_level != null) {
-    const upCast = document.createElement("p");
-    extendedSpell.appendChild(upCast);
-    upCast.classList.add("desc");
-    upCast.classList.add("hidden");
-    upCast.classList.add(`${spell.index}`);
-    upCast.textContent = spell.higher_level;
+    createHtml("p", spell.higher_level, extendedSpell, [
+      "desc",
+      "hidden",
+      `${spell.index}`,
+    ]);
   }
 
   const btnHolder = document.createElement("div");
   extendedSpell.appendChild(btnHolder);
-  btnHolder.classList.add("flex");
-  btnHolder.classList.add("right");
+  classAdd(btnHolder, ["flex", "right"]);
 
   const spellBtn = document.createElement("button");
   btnHolder.appendChild(spellBtn);
-  spellBtn.classList.add("remove-btn");
-  spellBtn.classList.add("hidden");
-  spellBtn.classList.add(`${spell.index}`);
+  classAdd(spellBtn, ["remove-btn", "hidden", `${spell.index}`]);
 
   if (book) {
     spellBtn.textContent = "Remove from Spellbook";
@@ -418,17 +387,12 @@ function createSpell(spell, book, lvl) {
     spellBtn.textContent = "Add to Spellbook";
     spellBtn.addEventListener("click", addSpelltoBook);
   }
-
-  if (book) {
-    cost.classList.add("hidden");
-    spellTime.classList.add("hidden");
-  }
 }
 
+//creates each level display
 function createLvlLabels(selectText, book, b) {
   const label = document.createElement("h3");
   label.classList.add("label");
-  //console.log(selectText);
   let numFlag = false;
 
   if (book) {
@@ -550,6 +514,7 @@ function createLvlLabels(selectText, book, b) {
   }
 }
 
+//expands indiv spell
 function expandSpell(e) {
   const spellName = e.target.classList[1];
   const expand = document.querySelectorAll(`.${spellName}`);
@@ -567,6 +532,7 @@ function expandSpell(e) {
   e.target.classList.remove("hidden");
 }
 
+//delete spell from spellbook
 function removeSpell(e) {
   console.log("remove spell function");
   const spell = e.target.classList[1];
@@ -600,6 +566,7 @@ function addSpelltoBook(e) {
     });
 }
 
+//create query for R, Conc & All btns (Book Spells)
 function bookQuery(btnText, test, flag) {
   let query = "";
 
@@ -616,6 +583,7 @@ function bookQuery(btnText, test, flag) {
   return query;
 }
 
+//deletes extra level labels on display
 function cleanNodes(box) {
   nodes = box.childNodes;
 
@@ -635,8 +603,7 @@ function cleanNodes(box) {
 
   if (nodes.length == 0) {
     const noSpellsHolder = document.createElement("div");
-    noSpellsHolder.classList.add("flex");
-    noSpellsHolder.classList.add("center");
+    classAdd(noSpellsHolder, ["flex", "center"]);
     box.appendChild(noSpellsHolder);
 
     const noSpells = document.createElement("h3");
@@ -645,22 +612,174 @@ function cleanNodes(box) {
   }
 }
 
-function createHtml(htmlType, value, parent, classAdd) {
+//creates HTML element
+function createHtml(htmlType, value, parent, class_) {
   const elem = document.createElement(htmlType);
+  if (value != null) elem.textContent = value;
+  if (class_ != null) classAdd(elem, class_);
+  parent.appendChild(elem);
+}
 
-  if (value != null) {
-    elem.textContent = value;
+//adds multiple classes to HTML element
+function classAdd(elem, class_) {
+  if (typeof class_ === "object") {
+    class_.forEach((e) => {
+      elem.classList.add(e);
+    });
+  } else {
+    elem.classList.add(class_);
+  }
+}
+
+//shows the Homebrew creation section
+function showHomebrew() {
+  hbBox.classList.contains("hidden")
+    ? (addHbBtn.textContent = "Hide Homebrew..")
+    : (addHbBtn.textContent = "Add Homebrew Spell");
+
+  hbBox.classList.toggle("hidden");
+}
+
+//submit Homebrew and create Spell
+function submitHomebrew() {
+  const spellNameInput = document.getElementById("name-input");
+  const levelInput = document.getElementById("level-input");
+  const schoolInput = document.getElementById("school-input");
+  const rangeInput = document.getElementById("range-input");
+  const damageInput = document.getElementById("dmg-input");
+  const dcInput = document.getElementById("dc-input");
+  const descInput = document.getElementById("desc-input");
+  const upcastInput = document.getElementById("upcast-input");
+
+  //which boxes are checked
+  const damageCheck = document.getElementById("dmg").checked;
+  const concCheck = document.getElementById("conc").checked;
+  const rituCheck = document.getElementById("ritu").checked;
+
+  //check all inputs are valid
+  let error = "";
+
+  error = checkInput(spellNameInput.value, 50, error, "Spell Name");
+  error = checkInput(rangeInput.value, 20, error, "Range");
+  error = checkInput(descInput.value, 3000, error, "Description");
+  error = checkInput(upcastInput.value, 1000, error, "Upcast");
+  error = checkInput(damageInput.value, 20, error, "Damage");
+
+  if (error != "") {
+    hbNotif.classList.remove("hidden");
+    hbNotif.textContent = `ERROR: ${error}`;
+    return;
+  } else {
+    hbNotif.classList.add("hidden");
+    hbNotif.textContent = "";
   }
 
-  if (classAdd != null) {
-    if (typeof classAdd === "object") {
-      classAdd.forEach((e) => {
-        elem.classList.add(e);
-      });
-    } else {
-      elem.classList.add(classAdd);
+  //assign input values
+  const newName = spellNameInput.value.trim();
+  const newIndex = createIndex(newName);
+  //need to add an axios call to check if index already exists
+  const newLevel = levelInput.value;
+  const newSchool = schoolInput.value;
+  const newRange = rangeInput.value.trim();
+  const newDesc = descInput.value.trim();
+
+  damageCheck && damageInput.value != ""
+    ? (newDamage = damageInput.value.trim())
+    : (newDamage = null);
+
+  let newDc = null;
+  if (dcInput.value != "noSave") newDc = dcInput.value;
+
+  let newUpcast = null;
+  if (upcastInput.value != "") newUpcast = upcastInput.value.trim();
+
+  //create object to send to server
+  const newSpell = {
+    level: newLevel,
+    school: newSchool,
+    name: newName,
+    concentration: concCheck,
+    ritual: rituCheck,
+    range: newRange,
+    damage: newDamage,
+    dc: newDc,
+    index: newIndex,
+    description: newDesc,
+    higher_level: newUpcast,
+    homebrew: true,
+  };
+
+  console.log(newSpell);
+}
+
+//check that User Input is correct
+function checkInput(input, length, error, value) {
+  //check length of input
+  if (input.length >= length) {
+    error += `${value} is too long // `;
+  }
+
+  if (input.length <= 0 && (value == "Range" || value == "Spell Name")) {
+    error += `${value} must exist // `;
+  } else {
+    //check that it starts with an alphebetic character
+    if (input.length > 0) {
+      if (!/^[A-Za-z0-9]/.test(input)) {
+        error += `${value} does not start with an alphanumeric character // `;
+      }
     }
   }
 
-  parent.appendChild(elem);
+  //check that it doesnt include ' which will break sql
+  if (input.includes("'")) {
+    error += `${value} includes the value ' // `;
+  }
+
+  //checks that it doesn't include " which messes with display
+  if (input.includes('"')) {
+    error += `${value} includes the value " // `;
+  }
+
+  //console.log(`${input} checked: ${flag}`);
+  return error;
+}
+
+//create Spell Index from Spell Name
+function createIndex(name) {
+  const regex = /[$&+,:"`;=?@#|<>.^*()%!]/g;
+
+  let index = name.toLowerCase().trim();
+  index = index.replaceAll(" ", "-");
+  index = index.replaceAll(regex, "-");
+
+  //console.log(`${index} created from ${name}`);
+  return index;
+}
+
+//clear the homebrew inputs
+function clearHb() {
+  document.getElementById("name-input").value = "";
+  document.getElementById("level-input").value = "0";
+  document.getElementById("school-input").value = "Illusion";
+  document.getElementById("range-input").value = "";
+  document.getElementById("dmg-input").value = "";
+  document.getElementById("dc-input").value = "noSave";
+  document.getElementById("desc-input").value = "";
+  document.getElementById("upcast-input").value = "";
+
+  //which boxes are checked
+  document.getElementById("dmg").checked = false;
+  document.getElementById("conc").checked = false;
+  document.getElementById("ritu").checked = false;
+
+  //disable damage input
+  document.getElementById("dmg-input").setAttribute("disabled", "");
+}
+
+function toggleDmg() {
+  if (hbDamage.checked == true) {
+    document.getElementById("dmg-input").removeAttribute("disabled");
+  } else {
+    document.getElementById("dmg-input").setAttribute("disabled", "");
+  }
 }

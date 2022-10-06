@@ -61,67 +61,80 @@
         <div class="line-s"></div>
         <article id="spell-book-holder">
 
-<!-- DEMO SPELL -->
-            <!-- <h3>CANTRIP</h3>
-            <section class="spell-hold">
-                <div class="spell-min">
-                <div class="spell-icon"></div>
-                <div>
-                    <h4>Fireball</h4>
-                    <p class="grey">Necromancy</p>
-                </div>
-                <p class="w50">Conc</p>
-                <p class="w50">60 ft</p>
-                <p class="w50">8d8+5</p>
-                <p class="w120">STR Save</p>
-                <p class = "plus">+</p>
-                </div>
-            </section>
-
-            <section class="spell-hold">
-                <div class="spell-min">
-                <div class="spell-icon"></div>
-                <div>
-                    <h4>Detect Magic</h4>
-                    <p class="grey">Necromancy</p>
-                </div>
-                <p class="w50">Ritual</p>
-                <p class="w50">60 ft</p>
-                <p class="w50">1d8</p>
-                <p class="w120">WIS Save</p>
-                <p class = "plus">+</p>
-                </div>
-            </section>
-
-            <section class="spell-hold">
-                <div class="spell-min">
-                <div class="spell-icon"></div>
-                <div>
-                    <h4>Mage Armor</h4>
-                    <p class="grey">Necromancy</p>
-                </div>
-                <p class="w50"></p>
-                <p class="w50">60 ft</p>
-                <p class="w50">1d8</p>
-                <p class="w120">WIS Save</p>
-                <p class = "plus">-</p>
-                </div>
-
-                <div class="spell-expand">
-                    <p class="desc">An audible alarm produces the sound of a hand bell for 10 seconds within 60 feet.</p>
-                    <p class="desc"> The hand can't attack, activate magic items, or carry more than 10 pounds.</p>
-                </div>
-
-                <div class="flex right">
-                    <button class="remove-btn">Remove from Spellbook</button>
-                </div>
-
-            </section> -->
-
-<!-- END DEMO SPELL -->
     </article>
         <div class="flex center">
-            <button id="add-custom">Add Homebrew Spell</button>
+            <button id="add-hb" class="front-btn">Add Homebrew Spell</button>
+        </div>
+        <div id="hb-hold" class="hidden">
+            <div class="flex">
+                <h4 id="hb-name">Spell Name</h4>
+                <input id="name-input" type="text" placeholder="Insert Spell Name..."></input>
+            </div>
+            <div class="flex">
+                <p class="m5 mt9 w43">Level</p>
+                <select class="m5 w120" id="level-input">
+                    <option value="0">Cantrip</option>
+                    <option value="1">1st Level</option>
+                    <option value="2">2nd Level</option>
+                    <option value="3">3rd Level</option>
+                    <option value="4">4th Level</option>
+                    <option value="5">5th Level</option>
+                    <option value="6">6th Level</option>
+                    <option value="7">7th Level</option>
+                    <option value="8">8th Level</option>
+                    <option value="9">9th Level</option>
+                </select>      
+                <p class="m5 mt9">School</p>
+                <select class="m5 w120" id="school-input">
+                    <option value="Illusion">Illusion</option>
+                    <option value="Abjuration">Abjuration</option>
+                    <option value="Conjuration">Conjuration</option>
+                    <option value="Divination">Divination</option>
+                    <option value="Enchantment">Enchantment</option>
+                    <option value="Evocation">Evocation</option>
+                    <option value="Necromancy">Necromancy</option>
+                    <option value="Transmutation">Transmutation</option>
+                </select>
+                <p class="m5 mt9">Save</p>
+                <select class="m5 w120" id="dc-input">
+                    <option value="noSave">None</option>
+                    <option value="STR">Strength</option>
+                    <option value="DEX">Dexterity</option>
+                    <option value="CON">Constitution</option>
+                    <option value="INT">Intelligence</option>
+                    <option value="WIS">Wisdom</option>
+                    <option value="CHA">Charisma</option>
+                </select>  
+            </div>
+            <div class="flex">
+                <p class="m5 w43">Range</p>
+                <input id="range-input" type="text" placeholder="Insert Range..."></input>
+                <p class="m5">Damage</p>
+                <input id="dmg-input" type="text" placeholder="Insert Damage DICE" disabled></input>
+
+                <form>
+                    <input type="checkbox" name="hb-group" value="dmg" id="dmg"/>
+                    <label for="dmg"> Dmg </label>
+                    <input type="checkbox" name="hb-group" value="conc" id="conc"/>
+                    <label for="conc"> Conc </label>
+                    <input type="checkbox" name="hb-group" value="ritu" id="ritu"/>
+                    <label for="ritu"> Ritual </label>
+                </form>
+            </div>
+            <div class="flex">
+                <p class="m5 w43 mt9">Desc</p>
+                <textarea id="desc-input" placeholder="Enter Spell Description Here..."></textarea>
+            </div>
+
+            <div class="flex">
+                <p class="m5 w43">Upcast</p>
+                <input id="upcast-input" placeholder="Enter What Happens When Casting at a Higher Level Here..."></input>
+            </div>
+            <div class="flex center"><p  id="hb-notif" class="hidden mt9">Spell Added!</p></div>
+            <div class="flex center">
+            <button id="submit-hb" class="front-btn">Submit Spell</button>
+            <button id="clear-hb" class="front-btn">Clear Spell</button>
+            </div>
         </div>
         
     </section>
@@ -156,82 +169,6 @@
         </nav>
         <div class="line-s"></div>
         <article id="all-spells-holder">
-
-<!-- DEMO SPELL -->
-<!-- <h3>CANTRIP</h3>
-<section class="spell-hold">
-    <div class="spell-min">
-    <div class="spell-icon"></div>
-    <div>
-        <h4>Fireball</h4>
-        <p class="grey">Necromancy</p>
-    </div>
-    <p class="w50">Conc</p>
-    <p class="w50">60 ft</p>
-    <div class="w50">
-        <p>5d8+6</p>
-        <p>150g</p>
-    </div>
-    <div class="w120">
-        <p>DEX SAVE</p>
-        <p>3 hours</p>
-    </div>
-    <p class = "plus">+</p>
-    </div>
-</section>
-
-<section class="spell-hold">
-    <div class="spell-min">
-    <div class="spell-icon"></div>
-    <div>
-        <h4>Detect Magic</h4>
-        <p class="grey">Necromancy</p>
-    </div>
-    <p class="w50">Ritual</p>
-    <p class="w50">60 ft</p>
-    <div class="w50">
-        <p> - </p>
-        <p>100g</p>
-    </div>
-    <div class="w120">
-        <p> - </p>
-        <p>3 hours</p>
-    </div>
-    <p class = "plus">+</p>
-    </div>
-</section>
-
-<section class="spell-hold">
-    <div class="spell-min">
-    <div class="spell-icon"></div>
-    <div>
-        <h4>Mage Armor</h4>
-        <p class="grey">Necromancy</p>
-    </div>
-    <p class="w50"></p>
-    <p class="w50">60 ft</p>
-    <div class="w50">
-        <p>2d8</p>
-        <p>100g</p>
-    </div>
-    <div class="w120">
-        <p>WIS Save</p>
-        <p>3 hours</p>
-    </div>
-    <p class = "plus">-</p>
-    </div>
-
-    <div class="spell-expand">
-        <p class="desc">An audible alarm produces the sound of a hand bell for 10 seconds within 60 feet.</p>
-        <p class="desc">The hand can't attack, activate magic items, or carry more than 10 pounds.</p>
-    </div>
-
-    <div class="flex right">
-        <button class="remove-btn">Add to Spellbook</button>
-    </div>
-</section> -->
-
-<!-- END DEMO SPELL -->
 
         </article>
     </section>
