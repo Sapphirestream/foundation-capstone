@@ -52,13 +52,13 @@ module.exports = {
   addSpelltoBook: (req, res) => {
     const { index } = req.params;
 
-    axios.get(`http://www.dnd5eapi.co/api/spells/${index}`).then((res) => {
+    axios.get(`http://www.dnd5eapi.co/api/spells/${index}`).then((spell) => {
       // pull data to add to the table
-      const { level, concentration, ritual } = res.data;
-      const school = res.data.school.name;
+      const { level, concentration, ritual } = spell.data;
+      const school = spell.data.school.name;
 
-      sequelize.query(`SELECT index FROM spellbook`).then((res) => {
-        spellIndex = res[0];
+      sequelize.query(`SELECT index FROM spellbook`).then((spellbook) => {
+        spellIndex = spellbook[0];
         const check = checkIndex(spellIndex, index);
 
         if (check == true) {
@@ -69,13 +69,15 @@ module.exports = {
             )
             .then(() => {
               console.log(`${index} added`);
+              res.sendStatus(200);
+              return;
             })
             .catch((err) => console.log(`error adding spell ${index}`, err));
+        } else {
+          res.sendStatus(400);
         }
       });
     });
-
-    res.sendStatus(200);
   },
 
   //GET BOOK SPELLS
@@ -185,12 +187,10 @@ module.exports = {
         INSERT INTO homebrew(spellbook_id, name, range, damage, dc, description, higher_level)
         VALUES ((SELECT spellbook_id FROM spellbook WHERE index = '${index}'), '${name}', '${range}', ${damage}, ${dc}, '${description}', ${higher_level})`
         )
-        .then((res) => {})
+        .then((resSQL) => {})
         .catch((err) => console.log(`error adding spell`, err));
 
       res.send(`${name} successfully added!`).status(200);
-    } else {
-      res.send(`${name} already exists!`).status(200);
     }
   },
 };

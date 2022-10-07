@@ -24,15 +24,15 @@ allFlag = false;
 console.log("connected to index.js");
 
 for (let i = 0; i < allBtns.length; i++) {
-  allBtns[i].addEventListener("click", pullAllSpells);
+  allBtns[i].addEventListener("click", clickAllSpells);
 }
 
-allConcBtn.addEventListener("click", pullAllSpells);
-allRituBtn.addEventListener("click", pullAllSpells);
-allAllBtn.addEventListener("click", pullAllSpells);
+allConcBtn.addEventListener("click", clickAllSpells);
+allRituBtn.addEventListener("click", clickAllSpells);
+allAllBtn.addEventListener("click", clickAllSpells);
 
 for (let i = 0; i < bookBtns.length; i++) {
-  bookBtns[i].addEventListener("click", pullBookSpells);
+  bookBtns[i].addEventListener("click", clickBookSpells);
 }
 
 addHbBtn.addEventListener("click", showHomebrew);
@@ -41,9 +41,7 @@ clearHbBtn.addEventListener("click", clearHb);
 hbDamage.addEventListener("click", toggleDmg);
 
 //get ALL SPELLS
-function pullAllSpells(e) {
-  const book = false;
-
+function clickAllSpells(e) {
   //toggle clicked button for ALL SPELLS
   if (e.target.classList.contains("all")) {
     e.target.classList.toggle("selected-all-btn");
@@ -73,9 +71,15 @@ function pullAllSpells(e) {
     }
   }
 
+  pullAllSpells();
+}
+
+function pullAllSpells() {
   //collect all selected buttons from same category
   const selected = document.querySelectorAll(".selected-all-btn");
   const selectText = [];
+
+  const book = false;
 
   //check if ritu or conc are selected
   concFlag = allConcBtn.classList.contains("selected-rc");
@@ -116,10 +120,7 @@ function pullAllSpells(e) {
 }
 
 //get BOOK SPELLS
-function pullBookSpells(e) {
-  const book = true;
-  spellBookBox.innerHTML = "";
-
+function clickBookSpells(e) {
   if (e.target.classList.contains("book")) {
     //if the button is the All Button
     if (e.target.classList.contains("book-all")) {
@@ -142,6 +143,12 @@ function pullBookSpells(e) {
     }
   }
 
+  pullBookSpells();
+}
+
+function pullBookSpells() {
+  const book = true;
+  spellBookBox.innerHTML = "";
   //collect all selected btns for books
   const selected = document.querySelectorAll(".selected-book-btn");
   const selectText = [];
@@ -555,10 +562,10 @@ function addSpelltoBook(e) {
 
   axios
     .post(`/api/spells/${spell}`)
-    .then(() => {
+    .then((res) => {
       console.log(`${spell} added!`);
       e.target.parentNode.parentNode.parentNode.remove();
-      //const refreshBooks = setTimeout(pullBookSpells(e), 3000);
+      if (res.status === 200) pullBookSpells();
     })
     .catch((err) => {
       console.log(`${spell} error`, err);
@@ -675,7 +682,6 @@ function submitHomebrew() {
   //assign input values
   const newName = spellNameInput.value.trim();
   const newIndex = createIndex(newName);
-  //need to add an axios call to check if index already exists
   const newLevel = levelInput.value;
   const newSchool = schoolInput.value;
   const newRange = rangeInput.value.trim();
@@ -711,6 +717,7 @@ function submitHomebrew() {
   axios
     .post("/api/book/homebrew/", newSpell)
     .then((res) => {
+      if (res.status === 200) pullBookSpells();
       clearHb();
       spellSuccess.textContent = res.data;
       const spellTO = setTimeout(succussTimeout, 5000);
