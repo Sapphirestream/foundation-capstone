@@ -33,7 +33,7 @@ submitHbBtn.addEventListener("click", submitHomebrew);
 clearHbBtn.addEventListener("click", clearHb);
 hbDamage.addEventListener("click", toggleDmg);
 
-//get ALL SPELLS
+//select ALL SPELLS btns
 function clickAllSpells(e) {
   //toggle clicked button for ALL SPELLS
   if (e.target.classList.contains("all")) {
@@ -67,6 +67,7 @@ function clickAllSpells(e) {
   pullAllSpells();
 }
 
+//get ALL Selected Spells
 function pullAllSpells() {
   //collect all selected buttons from same category
   const selected = document.querySelectorAll(".selected-all-btn");
@@ -112,7 +113,7 @@ function pullAllSpells() {
   }
 }
 
-//get BOOK SPELLS
+//select BOOK SPELLS btns
 function clickBookSpells(e) {
   if (e.target.classList.contains("book")) {
     //if the button is the All Button
@@ -139,6 +140,7 @@ function clickBookSpells(e) {
   pullBookSpells();
 }
 
+//get BOOK Selected spells
 function pullBookSpells() {
   const book = true;
   spellBookBox.innerHTML = "";
