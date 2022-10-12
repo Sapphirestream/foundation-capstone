@@ -19,7 +19,7 @@ let allWizardSpells = [];
 let spellIndex = [];
 
 //initialize spellbook
-getSpellIndex();
+//getSpellIndex();
 
 module.exports = {
   //GET WIZARD SPELLS
